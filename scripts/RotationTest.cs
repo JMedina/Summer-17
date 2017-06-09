@@ -8,61 +8,92 @@ using System.Linq;
 
 public class RotationTest : Redirector
 {
-    public GameObject target;
-    public Vector3 userPosition;
+    public static float minGain = -.99f;
+    public static float maxGain = .49f;
+    static float currentGain = .5f;
 
-    private Transform prefabHUD = null;
-    Transform instanceHUD;
+    public static uint maxTrials;
+    static uint trialNum;
 
-    float rotGain = 10;
-    float adjustmentAmount = 1f;
-    bool lowering = true;
+    public GameObject yesButton;
+    public GameObject noButton;
+
+    //Staircase specific variables
+    static float adjustmentAmount = 0.5f;
+    static bool lowering = true;
+    /////////////////////////////
+
+    //Constant Stimuli specific variables
+    static int numLevels;
+    ////////////////////////////
 
 
-    void staircase() {
+    private string getLastLine(string path)
+    {
+        string lastLine;
+        using (StreamReader reader = new StreamReader("Assets/test.txt", Encoding.Default))
+        {
+            lastLine = File.ReadAllLines("file.txt").Last();
+        }
+        return lastLine;
+    }
 
-        StreamReader reader = new StreamReader("Assets/test.txt", Encoding.Default);
-        string lastLine = File.ReadAllLines("file.txt").Last();
+    void writeToFile(string path, string text)
+    {
+        StreamWriter writer = new StreamWriter(path, true);
+        writer.WriteLine(text);
+        writer.Close();
+    }
 
-        if (lastLine == "Yes"){
+    /// <summary>
+    /// A set of equally spaced levels of the stimulus intensities is chosen
+    /// (usually 5-9). Each level is repeated large number of times. The
+    /// subject is asked to report whether the presented stimulus can be
+    /// detected(when AL is measured), or whether the intensity of the
+    /// presented test stimulus is greater than that of the reference stimulus
+    /// (when DL is measured).
+    /// </summary>
+    public void constantStimuli()
+    {
+        string lastLine = getLastLine("Assets/test.txt");
+        //TODO: Print old gain and whether person recognized it into separate file
+
+        float [] possibleLevels = new float[numLevels];
+        for(int i = 0; i < numLevels; ++i)
+        {
+            possibleLevels[i] = minGain + (maxGain - minGain) * (i / numLevels);
+        }
+
+
+
+
+    }
+
+    public void staircase() {
+
+        string lastLine = getLastLine("Assets/test.txt");
+
+        writeToFile("Assets/results.txt", lastLine);
+
+        if (lastLine == yesButton.name){
             adjustmentAmount = (lowering == true) ? adjustmentAmount : (adjustmentAmount / 2);
             lowering = true;
         }
 
-        if (lastLine == "No"){
+        if (lastLine == noButton.name){
             adjustmentAmount = (lowering == false) ? adjustmentAmount : (adjustmentAmount / 2);
             lowering = false;
         }
 
-        rotGain = (lowering == true) ? (rotGain - adjustmentAmount) : (rotGain + adjustmentAmount);
+        currentGain = (lowering == true) ? (currentGain - adjustmentAmount) : (currentGain + adjustmentAmount);
     }
 
 
 
     public override void ApplyRedirection()
     {
-
         float deltaDir;
-        //Vector3 targetPosition;
-        //float angleToTarget;
-        //targetPosition = Utilities.FlattenedPos3D(userPosition);
-        //angleToTarget = Utilities.GetSignedAngle(redirectionManager.currDir, targetPosition - redirectionManager.currPos);
-
-
         deltaDir = redirectionManager.deltaDir;
-        //if (Mathf.Abs(angleToTarget) >= Mathf.Deg2Rad * 10){
-        InjectRotation(rotGain * redirectionManager.deltaDir);
-        //}
-
-        /* public void SetHUD()
-         {
-             if (prefabHUD == null)
-                 prefabHUD = Resources.Load<Transform>("TwoOneTurnResetter HUD");
-                 instanceHUD = Instantiate(prefabHUD);
-                 instanceHUD.parent = redirectionManager.headTransform;
-                 instanceHUD.localPosition = instanceHUD.position;
-                 instanceHUD.localRotation = instanceHUD.rotation;
-         } */
-
+        InjectRotation(currentGain * redirectionManager.deltaDir);
     }
 }
