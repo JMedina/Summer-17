@@ -6,12 +6,12 @@ using UnityEngine.SceneManagement;
 
 public class ButtonManager : MonoBehaviour {
 
-    //We want button presses to be triggered after a short amount of time
-    //instead of immediately, for the sake of the user. So we use a counter
-    //to increment time.
-    private int Counter = 0;
     public AudioClip soundFile;
-
+    public RotationTest rotationTest;
+    public Transform room;
+    public Transform player;
+    private int Counter = 0;
+    
     void writeToFile(string text)
     {
         StreamWriter writer = new StreamWriter("Assets/test.txt", true);
@@ -19,17 +19,26 @@ public class ButtonManager : MonoBehaviour {
         writer.Close();
     }
 
+    void resetRoom()
+    {
+        Quaternion rotation = Quaternion.Euler(0, player.rotation.y, 0);
+        room.rotation = rotation;
+    }
+
     void OnCollisionEnter(Collision col)
     {
-        ++Counter;
-        if (Counter >= 20)
-        {
-            GetComponent<AudioSource>().PlayOneShot(soundFile);
-            Debug.Log(this.gameObject.name);
-            writeToFile(this.gameObject.name);
-            Counter = 0;
-            SceneManager.LoadScene("Redirected walking scene");
+        if(col.gameObject.name == "Yes" || col.gameObject.name == "No") {
+            ++Counter;
+            if (Counter >= 20)
+            {
+                GetComponent<AudioSource>().PlayOneShot(soundFile);
+                Debug.Log(col.gameObject.name);
+                writeToFile(col.gameObject.name);
+                rotationTest.staircase();
+                resetRoom();
+                Counter = 0;
+            }    
         }
      }
-}
+ }
 
