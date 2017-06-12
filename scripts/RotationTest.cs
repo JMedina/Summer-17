@@ -19,7 +19,7 @@ public class RotationTest : Redirector
     public GameObject noButton;
 
     //Staircase specific variables
-    static float adjustmentAmount = 0.5f;
+    static float stepSize = 0.5f;
     static bool lowering = true;
     /////////////////////////////
 
@@ -63,29 +63,29 @@ public class RotationTest : Redirector
         {
             possibleLevels[i] = minGain + (maxGain - minGain) * (i / numLevels);
         }
-
-
-
-
     }
+
+
+
+
 
     public void staircase() {
 
         string lastLine = getLastLine("Assets/test.txt");
 
-        writeToFile("Assets/results.txt", lastLine);
+        writeToFile("Assets/results.txt", lastLine); //Todo: copy gain amount
 
         if (lastLine == yesButton.name){
-            adjustmentAmount = (lowering == true) ? adjustmentAmount : (adjustmentAmount / 2);
+            stepSize = (lowering == true) ? stepSize : (stepSize / 2);
             lowering = true;
         }
 
         if (lastLine == noButton.name){
-            adjustmentAmount = (lowering == false) ? adjustmentAmount : (adjustmentAmount / 2);
+            stepSize = (lowering == false) ? stepSize : (stepSize / 2);
             lowering = false;
         }
 
-        currentGain = (lowering == true) ? (currentGain - adjustmentAmount) : (currentGain + adjustmentAmount);
+        currentGain = (lowering == true) ? (currentGain - stepSize) : (currentGain + stepSize);
     }
 
 
