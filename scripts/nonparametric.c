@@ -18,8 +18,11 @@ public class Nonparametric : Redirector
     public static float currentGain = .49f;
     public static float stepSize = -.2f;
     
-    //Staircase specific variable
+    //Staircase specific variables
     public static uint maxReversals;
+    public static uint reversalNum = 0;
+    public static float Zn = 1.0f;
+    public static list<float> reversalList;
     
     //Stochastic specific variables
     public static float confidence = 0.5f;
@@ -60,10 +63,20 @@ public class Nonparametric : Redirector
         string lastLine = getLastLine("Assets/test.txt");
         writeToFile("Assets/results.txt", lastLine + Convert.ToString(currentgain));
         
-        float Zn = (lastLine == yesButton.name) ? 1.0f : -1.0f;
-        
+        float newZn = (lastLine == yesButton.name) ? 1.0f : -1.0f;
+        if(newZn != Zn){
+            ++reversalNum;
+            reversalList.Add(currentGain);
+            if(reversalNum == maxReversals){
+                Debug.Log("Done: " + Convert.ToString(reversalList.Average()));
+            }
+        }
+        Zn = newZn;
+    
         currentGain -= stepSize * (2*Zn -1);
     }
+    
+    
     
     //Stochastic approximation
     //a type of modified binary search
@@ -82,6 +95,35 @@ public class Nonparametric : Redirector
         currentGain -= stepSize * (Zn - confidence) / trialNum;
         ++trialNum;
         
+    }
+    
+    
+    
+    //Accelerated stochastic approximation
+    //improvement on standard stochastic approximation
+    //theoretically converges in fewer trials
+    //Step rule: Xn+1 = Xn - d *(Zn - phi) / (2 + m)
+    //d is initial step size
+    //Zn is response at trial n
+    //Zn = 1 -> stimulus detected/correct
+    //Zn = 0 -> stimulus not detected.
+    public void acceleratedStochastic(){
+        if(trialNum <= 2){
+            stochastic();
+            return;
+        }
+        
+        string lastLine = getLastLine("Assets/test.txt");
+        writeToFile("Assets/results.txt", lastLine + Convert.ToString(currentGain));
+                
+        float newZn = (lastLine == yesButton.name) ? 1.0f : -1.0f;
+        if(newZn != Zn){
+            ++reversalNum;
+            }
+        }
+        Zn = newZn;
+        
+        currentGain -= stepSize * (Zn - confidence) / (2 + reversalNum);
     }
 
  
