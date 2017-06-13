@@ -33,7 +33,7 @@ public class RotationTest : Redirector
         string lastLine;
         using (StreamReader reader = new StreamReader("Assets/test.txt", Encoding.Default))
         {
-            lastLine = File.ReadAllLines("file.txt").Last();
+            lastLine = File.ReadAllLines(reader).Last();
         }
         return lastLine;
     }
