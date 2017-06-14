@@ -52,16 +52,22 @@ public class Quest : Redirector
 
         //TODO : set termination rules
 
-        //some of these values are no longer needed since changing to a logistic model
+        //general variables
         int N = 20; // interval size?
         int N2 = N * 2;
         int sDev = 12; //S : standard deviation of prior density
-        float delta = 0.01f; //D : wiggle room to account for user error
-        float gamma = 0.5f; //G : value for 2AFC but should be 0 for yes/no
-        float beta = 3.5f; //slope of psychometric
-        float b = beta / 20f; //B : divided by interval size? 
-        float epsilon = 1.5f; //E value shouuld be 1.5 for 2AFC but 1.15 for yes/no
         int numTrials = 32; //M
+
+        //Weibull model variables
+        float delta = 0.01f; //D : wiggle room to account for user error
+        float b = 3.5f / 20f; //B : slope divided by interval size? 
+        float epsilon = 1.5f; //E value shouuld be 1.5 for 2AFC but 1.15 for yes/no
+        
+
+        //logistic model variables
+        float lambda = 0.0f; // lapse rate (no idea what this should be?? apparently zero creates bias) 
+        float beta = 3.5f; //slope of psychometric
+        float gamma = 0.5f; //G : value for 2AFC but should be 0 for yes/no
 
 
 
@@ -69,7 +75,7 @@ public class Quest : Redirector
         {
             //P[N2 + i] = 1 - (1 - gamma) * Mathf.Exp( Mathf.Pow(-10.0f , (b * (i + epsilon)))); // Weibull Psychometric
 
-            P[N2 + i] = 1 / (1 + Mathf.Exp(-(i - maxGain) / beta)); //Logistic function
+            P[N2 + i] = gamma + (1-gamma-lambda) / (1 + Mathf.Exp(-(i - maxGain) * beta)); //Logistic function
 
             if ( P[N2 + i] > 1-delta) { P[N2 + i] = 1 - delta; }//accounting for user error
 
@@ -103,7 +109,7 @@ public class Quest : Redirector
             }
             ////////////////////
 
-            //Mathf.FloorToInt(P[N2 + x + T0 - T1] + RandomNumber); //simulated user
+            //int response = Mathf.FloorToInt(P[N2 + x + T0 - T1] + RandomNumber); //simulated user
 
             int response = 0; //PLACEHOLDER gather response from user by applying stimulus level x + T0
 
@@ -111,7 +117,7 @@ public class Quest : Redirector
 
             for (int t = -N; t < N; t++) //t = possible threshold values
             {
-                Q[N + t] = Q[N + t] - S[response][N2+t-x];
+                Q[N + t] = Q[N + t] + S[response][N2+t-x];
             }
 
         }
