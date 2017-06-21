@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RDR environment", "RDR environment.csproj", "{F1EF0110-FE0E-16F0-3B06-50CA05EA0899}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RDR environment.Editor", "RDR environment.Editor.csproj", "{02636D38-E0B7-94DE-C9C3-447B88F4205B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F1EF0110-FE0E-16F0-3B06-50CA05EA0899}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1EF0110-FE0E-16F0-3B06-50CA05EA0899}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1EF0110-FE0E-16F0-3B06-50CA05EA0899}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1EF0110-FE0E-16F0-3B06-50CA05EA0899}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02636D38-E0B7-94DE-C9C3-447B88F4205B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02636D38-E0B7-94DE-C9C3-447B88F4205B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02636D38-E0B7-94DE-C9C3-447B88F4205B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02636D38-E0B7-94DE-C9C3-447B88F4205B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
