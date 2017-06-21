@@ -6,18 +6,29 @@ using UnityEngine.SceneManagement;
 
 public class ButtonManager : MonoBehaviour {
 
-    public AudioClip soundFile;
-    //public RotationTest rotationTest;
+    public AudioSource soundFile;
     public Nonparametric nonParametric;
     public GameObject room;
     public GameObject player;
     private int Counter = 0;
+    private static bool needSound = false;
     
     void writeToFile(string text)
     {
         StreamWriter writer = new StreamWriter("Assets/test.txt", true);
         writer.WriteLine(text);
         writer.Close();
+
+        
+    }
+
+    private void Awake()
+    {
+        //PEST
+        //nonParametric.PESTInitialization();
+        //nonParametric.PESTSubroutine();
+        //nonParametric.setStimLevel(0.0f);
+        //nonParametric.setResponse(-1);
     }
 
     void Update()
@@ -33,6 +44,12 @@ public class ButtonManager : MonoBehaviour {
             writeToFile("No");
             nonParametric.staircase();
             rotateRoom();
+        }
+
+        if (needSound)
+        {
+            soundFile.Play();
+            needSound = false;
         }
     }
 
@@ -54,12 +71,16 @@ public class ButtonManager : MonoBehaviour {
     {
         if(col.gameObject.name == "Yes" || col.gameObject.name == "No") {
             ++Counter;
-            if (Counter >= 100)
+            if (Counter >= 50)
             {
-                GetComponent<AudioSource>().PlayOneShot(soundFile);
+                needSound = true;
                 Debug.Log(col.gameObject.name);
                 writeToFile(col.gameObject.name);
+                //STAIRCASE
                 nonParametric.staircase();
+                //PEST
+                //nonParametric.PEST();
+
                 //resetRoom();
                 rotateRoom();
                 Counter = 0;

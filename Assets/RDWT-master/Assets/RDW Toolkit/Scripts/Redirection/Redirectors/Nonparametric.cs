@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Redirection;
 using System.Text;
 using System.IO;
@@ -15,11 +16,13 @@ public class Nonparametric : Redirector
 
     public static float minGain = -.99f;
     public static float maxgain = .49f;
-    public static float currentGain = 2.49f;
+    public static float currentGain = .79f;
     public static float stepSize = 0.1f;
 
+    public Text doneText;
+
     //Staircase specific variables
-    public static uint maxReversals = 10;
+    public static uint maxReversals = 4;
     public static uint reversalNum = 0;
     public static float Zn = 1.0f;
     public static List<float> reversalList = new List<float>();
@@ -28,18 +31,26 @@ public class Nonparametric : Redirector
     public static float confidence = 0.5f;
     public static uint trialNum = 1;
 
+    //PEST specific variables
+    float stimRange = .79f;
+    int numTrials;
+    float[] prob;
+    float[] plgit;
+    float[] mlgit;
+    float std;
+    int response;
+    float stimLevel;
+    static int numLevels = 10; //CHANGE THIS
 
-
-
-    /*private string getLastLine(string path)
+    public void setStimLevel(float stimLevel)
     {
-        string lastLine;
-        using (StreamReader reader = new StreamReader("Assets/test.txt", Encoding.Default))
-        {
-            lastLine = File.ReadAllLines("file.txt").Last();
-        }
-        return lastLine;
-    }*/
+        this.stimLevel = stimLevel;
+    }
+    public void setResponse(int response)
+    {
+        this.response = response;
+    }
+
 
     private string getLastLine(string path)
     {
@@ -84,7 +95,7 @@ public class Nonparametric : Redirector
         string lastLine = getLastLine("Assets/test.txt");
         writeToFile("Assets/results.txt", lastLine + Convert.ToString(currentGain));
 
-        float newZ = (lastLine == yesButton.name) ? 1.0f : -1.0f;
+        float newZ = (lastLine == yesButton.name) ? 1.0f : 0.0f;
         if (newZ != Zn)
         {
             reversalList.Add(currentGain);
@@ -92,6 +103,7 @@ public class Nonparametric : Redirector
             if (reversalList.Count == maxReversals)
             {
                 Debug.Log("Done: " + Convert.ToString(reversalList.Average()));
+                doneText.text = "DONE!";
             }
         }
         Zn = newZ;
@@ -114,7 +126,7 @@ public class Nonparametric : Redirector
     {
         string lastLine = getLastLine("Assets/test.txt");
         writeToFile("Assets/results.txt", lastLine + Convert.ToString(currentGain));
-
+        
         Zn = (lastLine == yesButton.name) ? 1.0f : -1.0f;
 
         currentGain -= stepSize * (Zn - confidence) / trialNum;
@@ -155,11 +167,107 @@ public class Nonparametric : Redirector
     }
 
 
+    public void QUEST()
+    {
+        
+    }
 
-public override void ApplyRedirection()
+    public void PEST()
+    {
+        
+        PESTSubroutine();
+        
+        currentGain = stimLevel;
+
+        Debug.Log("testing gain of " + currentGain);
+
+        string lastLine = getLastLine("Assets/test.txt");
+        writeToFile("Assets/results.txt", lastLine + Convert.ToString(currentGain));
+
+        response = (lastLine == yesButton.name) ? 1 : -1;
+
+        float sum = 0;
+
+        for (int i = -2; i < 2; i++)
+        {
+            int iteration = (int)(currentGain * (stimRange / numLevels));
+            sum = prob[iteration + i];
+        }
+
+    }
+
+    public void PESTInitialization()
+    {
+
+        //each iteration of 1 jumps a certain step size which = ( stimRange / numLevels )
+        numTrials = 4;
+
+        prob = new float[numLevels * 2]; //cumulative probability that the threshold is at eaech of the possible values of the independent variable based on user responses
+
+        plgit = new float[numLevels * 2]; //psychometric function. probablity of a positive response
+        mlgit = new float[numLevels * 2]; //psychometric function. probability of a negative response
+
+        std = stimRange / 5; //estimate slope of psychometric function
+
+        for (int i = 0; i < 2 * numLevels; i++)
+        {
+            prob[i] = 0;
+            float lgit = 1 / (1 + Mathf.Exp((stimRange - (i * stimRange / numLevels)) / std)); //(i*stimRange/numLevels) is the iteration jump for stimulus values for each i
+            plgit[i] = Mathf.Log(lgit);
+            mlgit[i] = Mathf.Log(1 - lgit);
+        }
+
+        response = -1; // initialize as a negative respose 
+        stimLevel = stimRange; // initialize 
+
+    }
+
+    public void PESTSubroutine()
+    {
+        float max = -1000f;
+        int p1 = numLevels, p2 = numLevels; //place where the max(s) is stored
+
+        for (int j = 0; j < numLevels; j++)
+        {
+            int iterator = (int)(stimLevel * numLevels / stimRange);
+            if (response == 1)
+            {
+                prob[j] = prob[j] + plgit[numLevels + iterator - j -1];
+            }
+            else if (response == -1)
+            {
+                prob[j] = prob[j] + mlgit[numLevels + iterator -j -1];
+            }
+
+            if (prob[j] > max)
+            {
+                max = prob[j];
+                //p1 = j;
+            }
+            else
+            {
+                p1 = j; 
+            }
+            
+            if (prob[j] == max)
+            {
+                p2 = j;
+            }
+
+        }
+
+        //Mathf.FloorToInt( )
+        stimLevel = (p1 + p2) * (stimRange / numLevels) / 2;
+        Debug.Log("stim level = (" + p1 + " + " + p2 + ") * (" + stimRange + "/" + numLevels + ") /2");
+
+    }
+
+
+    public override void ApplyRedirection()
 {
     float    deltaDir = redirectionManager.deltaDir;
-    InjectRotation((currentGain * deltaDir) + deltaDir);
+        
+    InjectRotation((currentGain * deltaDir));
 
     }
 }
