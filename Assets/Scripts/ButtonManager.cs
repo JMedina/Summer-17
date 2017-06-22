@@ -10,6 +10,9 @@ public class ButtonManager : MonoBehaviour {
     public Nonparametric nonParametric;
     public GameObject room;
     public GameObject player;
+
+    public GameObject arrow;
+
     private int Counter = 0;
     private static bool needSound = false;
     
@@ -53,13 +56,6 @@ public class ButtonManager : MonoBehaviour {
         }
     }
 
-
-    /*void resetRoom()
-    {
-        Quaternion rotation = Quaternion.Euler(0, player.transform.rotation.y, 0);
-        room.transform.rotation = rotation;
-    }*/
-
     void rotateRoom()
     {
         Vector3 axis = new Vector3(0, 1, 0);
@@ -76,14 +72,13 @@ public class ButtonManager : MonoBehaviour {
                 needSound = true;
                 Debug.Log(col.gameObject.name);
                 writeToFile(col.gameObject.name);
-                //STAIRCASE
-                nonParametric.staircase();
-                //PEST
-                //nonParametric.PEST();
+                nonParametric.staircase();  //<- staircase
+                //nonParametric.PEST();     //<- PEST
 
-                //resetRoom();
                 rotateRoom();
                 Counter = 0;
+
+                arrow.transform.Rotate(new Vector3(0, 0, 1), 180f);
             }    
         }
      }
