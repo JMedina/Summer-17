@@ -74,8 +74,8 @@ public class ButtonManager : MonoBehaviour {
                 writeToFile(col.gameObject.name);
                 nonParametric.staircase();  //<- staircase
                 //nonParametric.PEST();     //<- PEST
-
-                rotateRoom();
+                CameraFade.StartAlphaFade(Color.white, false, 2f, 2f, () => { rotateRoom(); });
+                //rotateRoom();
                 Counter = 0;
 
                 arrow.transform.Rotate(new Vector3(0, 0, 1), 180f);
