@@ -12,6 +12,8 @@ public class ButtonManager : MonoBehaviour {
     public GameObject player;
     private int Counter = 0;
     private static bool needSound = false;
+
+    private static string clicked = " ";
     
     void writeToFile(string text)
     {
@@ -26,9 +28,7 @@ public class ButtonManager : MonoBehaviour {
     {
         //PEST
         //nonParametric.PESTInitialization();
-        //nonParametric.PESTSubroutine();
-        //nonParametric.setStimLevel(0.0f);
-        //nonParametric.setResponse(-1);
+        
     }
 
     void Update()
@@ -64,28 +64,41 @@ public class ButtonManager : MonoBehaviour {
     {
         Vector3 axis = new Vector3(0, 1, 0);
         room.transform.RotateAround(player.transform.position, axis, 90f);
+        
     }
 
 
     void OnCollisionEnter(Collision col)
     {
-        if(col.gameObject.name == "Yes" || col.gameObject.name == "No") {
-            ++Counter;
-            if (Counter >= 50)
-            {
-                needSound = true;
-                Debug.Log(col.gameObject.name);
-                writeToFile(col.gameObject.name);
-                //STAIRCASE
-                nonParametric.staircase();
-                //PEST
-                //nonParametric.PEST();
-
-                //resetRoom();
-                rotateRoom();
-                Counter = 0;
-            }    
+        if(col.gameObject.name == "Yes" || col.gameObject.name == "No" ) {
+            clicked = col.gameObject.name;
         }
      }
- }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        clicked = " ";
+    }
+
+   public void recordData()
+    {
+
+        if (clicked != " ")
+        {
+
+            needSound = true;
+            Debug.Log(clicked);
+            writeToFile(clicked);
+            //STAIRCASE
+            nonParametric.staircase();
+            //PEST
+            //nonParametric.PEST();
+
+            //resetRoom();
+            rotateRoom();
+        }
+
+
+    }
+}
 

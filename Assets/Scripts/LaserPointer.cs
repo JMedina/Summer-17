@@ -12,6 +12,8 @@ public class LaserPointer : MonoBehaviour
     private GameObject reticule;
     private Transform reticuleTransform;
 
+    public ButtonManager buttonManager;
+
 
 
     private SteamVR_Controller.Device Controller
@@ -55,6 +57,11 @@ public class LaserPointer : MonoBehaviour
                 //ShowLaser(hit);
                 ShowReticule(hit);
             }
+        }
+        else if (Controller.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad))
+        {
+            Debug.Log("released the button");
+            buttonManager.recordData();
         }
         else 
         {

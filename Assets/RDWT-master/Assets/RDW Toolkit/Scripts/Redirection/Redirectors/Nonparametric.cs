@@ -186,21 +186,35 @@ public class Nonparametric : Redirector
 
         response = (lastLine == yesButton.name) ? 1 : -1;
 
+        float fullSum = 0;
+
+        for (int i = 0; i < numLevels; i++)
+        {
+            fullSum += prob[i];
+        }
+
         float sum = 0;
 
         for (int i = -2; i < 2; i++)
         {
-            int iteration = (int)(currentGain * (stimRange / numLevels));
-            sum = prob[iteration + i];
+            int iteration = (int)(currentGain * (numLevels / stimRange));
+            sum += prob[iteration + i];
         }
 
+        if (fullSum * 0.95 <= sum)
+        {
+            //DONE
+            Debug.Log("Done! with threshold at " + currentGain);
+        }
     }
 
     public void PESTInitialization()
     {
-
+        // over how many stimulus intervals are you testing? Together this makes the value RANGE
+        numLevels = 10;
+        stimRange = currentGain;
         //each iteration of 1 jumps a certain step size which = ( stimRange / numLevels )
-        numTrials = 4;
+        numTrials = 1;
 
         prob = new float[numLevels * 2]; //cumulative probability that the threshold is at eaech of the possible values of the independent variable based on user responses
 
@@ -212,20 +226,25 @@ public class Nonparametric : Redirector
         for (int i = 0; i < 2 * numLevels; i++)
         {
             prob[i] = 0;
-            float lgit = 1 / (1 + Mathf.Exp((stimRange - (i * stimRange / numLevels)) / std)); //(i*stimRange/numLevels) is the iteration jump for stimulus values for each i
+            float lgit = 1 / (1 + Mathf.Exp((stimRange - ((i+1) * stimRange / numLevels)) / std)); //(i*stimRange/numLevels) is the iteration jump for stimulus values for each i
             plgit[i] = Mathf.Log(lgit);
             mlgit[i] = Mathf.Log(1 - lgit);
         }
 
-        response = -1; // initialize as a negative respose 
+        response = 1; // initialize as a positive respose 
         stimLevel = stimRange; // initialize 
+
+        PESTSubroutine();
+
+        stimLevel = 0.0f;
+        response = -1;
 
     }
 
     public void PESTSubroutine()
     {
         float max = -1000f;
-        int p1 = numLevels, p2 = numLevels; //place where the max(s) is stored
+        float p1 = 0, p2 = 0; //place where the max(s) is store
 
         for (int j = 0; j < numLevels; j++)
         {
@@ -246,19 +265,19 @@ public class Nonparametric : Redirector
             }
             else
             {
-                p1 = j; 
+                p1 = j * (stimRange / numLevels); 
             }
             
             if (prob[j] == max)
             {
-                p2 = j;
+                p2 = j * (stimRange / numLevels);
             }
 
         }
 
         //Mathf.FloorToInt( )
         stimLevel = (p1 + p2) * (stimRange / numLevels) / 2;
-        Debug.Log("stim level = (" + p1 + " + " + p2 + ") * (" + stimRange + "/" + numLevels + ") /2");
+        Debug.Log("stim level " + stimLevel + "= (" + p1 + " + " + p2 + ") * (" + stimRange + "/" + numLevels + ") /2");
 
     }
 
