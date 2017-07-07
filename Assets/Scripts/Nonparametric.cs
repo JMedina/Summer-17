@@ -12,14 +12,12 @@ using System;
 public class Nonparametric : Redirector
 {
     public GameObject yesButton;
-    public GameObject nobutton;
+    public GameObject noButton;
 
     public static float minGain = -.99f;
     public static float maxgain = .49f;
     public static float currentGain = .79f;
     public static float stepSize = 0.1f;
-
-    public Text doneText;
 
     //Staircase specific variables
     public static uint maxReversals = 4;
@@ -41,15 +39,6 @@ public class Nonparametric : Redirector
     int response;
     float stimLevel;
     static int numLevels = 10; //CHANGE THIS
-
-    public void setStimLevel(float stimLevel)
-    {
-        this.stimLevel = stimLevel;
-    }
-    public void setResponse(int response)
-    {
-        this.response = response;
-    }
 
 
     private string getLastLine(string path)
@@ -87,9 +76,6 @@ public class Nonparametric : Redirector
     //Zn is the response at trial n.
     //Zn = 1 -> stimulus detected/correct
     //Zn = 0 -> stimulus not detected
-
-
-    //Staircase to find lower threshold
     public void staircase()
     {
         string lastLine = getLastLine("Assets/test.txt");
@@ -103,15 +89,13 @@ public class Nonparametric : Redirector
             if (reversalList.Count == maxReversals)
             {
                 Debug.Log("Done: " + Convert.ToString(reversalList.Average()));
-                doneText.text = "DONE!";
             }
         }
         Zn = newZ;
         Debug.Log(currentGain);
         currentGain -= stepSize * (2 * Zn - 1);
-
-        
     }
+
 
 
     //Stochastic approximation
@@ -126,12 +110,11 @@ public class Nonparametric : Redirector
     {
         string lastLine = getLastLine("Assets/test.txt");
         writeToFile("Assets/results.txt", lastLine + Convert.ToString(currentGain));
-        
+
         Zn = (lastLine == yesButton.name) ? 1.0f : -1.0f;
 
         currentGain -= stepSize * (Zn - confidence) / trialNum;
         ++trialNum;
-
     }
 
 
@@ -160,114 +143,129 @@ public class Nonparametric : Redirector
         {
             ++reversalNum;
         }
-    
+
         Zn = newZn;
-        
-        currentGain -= stepSize* (Zn - confidence) / (2 + reversalNum);
+
+        currentGain -= stepSize * (Zn - confidence) / (2 + reversalNum);
     }
 
-
-    public void QUEST()
-    {
-        
-    }
-
-    public void PEST()
-    {
-        
-        PESTSubroutine();
-        
-        currentGain = stimLevel;
-
-        Debug.Log("testing gain of " + currentGain);
-
-        string lastLine = getLastLine("Assets/test.txt");
-        writeToFile("Assets/results.txt", lastLine + Convert.ToString(currentGain));
-
-        response = (lastLine == yesButton.name) ? 1 : -1;
-
-        float sum = 0;
-
-        for (int i = -2; i < 2; i++)
-        {
-            int iteration = (int)(currentGain * (stimRange / numLevels));
-            sum = prob[iteration + i];
-        }
-
-    }
+   
 
     public void PESTInitialization()
     {
+        numLevels = 10;             // # of stimulus intervals to test.
+        stimRange = currentGain;    //each iteration jumps a step size of ( stimRange / numLevels )
+        std = stimRange / 5;        //estimated slope of psychometric function
 
-        //each iteration of 1 jumps a certain step size which = ( stimRange / numLevels )
-        numTrials = 4;
-
-        prob = new float[numLevels * 2]; //cumulative probability that the threshold is at eaech of the possible values of the independent variable based on user responses
-
+        prob  = new float[numLevels * 2]; //cumulative probability that the threshold is at each possible value of the independent variable based on user responses
         plgit = new float[numLevels * 2]; //psychometric function. probablity of a positive response
         mlgit = new float[numLevels * 2]; //psychometric function. probability of a negative response
 
-        std = stimRange / 5; //estimate slope of psychometric function
 
-        for (int i = 0; i < 2 * numLevels; i++)
+        //For each possible stimulus level, find the logarithmic probabilty
+        //and populate the arrays with probabilities of positive and negative responses.
+        float lgit;
+        for (int i = 0; i < 2 * numLevels; ++i)
         {
             prob[i] = 0;
-            float lgit = 1 / (1 + Mathf.Exp((stimRange - (i * stimRange / numLevels)) / std)); //(i*stimRange/numLevels) is the iteration jump for stimulus values for each i
+            lgit = 1 / (1 + Mathf.Exp((stimRange - ((i + 1) * stimRange / numLevels)) / std));
             plgit[i] = Mathf.Log(lgit);
             mlgit[i] = Mathf.Log(1 - lgit);
         }
 
-        response = -1; // initialize as a negative respose 
-        stimLevel = stimRange; // initialize 
+        //Set initial response and stimulus level for subroutine
+        response = -1;
+        stimLevel = stimRange;
+        PESTSubroutine();
 
+        //Set them again cause yolo
+        stimLevel = 0;
+        response = -1;
     }
+
 
     public void PESTSubroutine()
     {
-        float max = -1000f;
-        int p1 = numLevels, p2 = numLevels; //place where the max(s) is stored
+        float max = float.MinValue; //value of max probability
+        int p1 = 0;                 //current index
+        int p2 = 0;                 //index of max probability
+        int iterator;               //index in probability array
 
-        for (int j = 0; j < numLevels; j++)
+
+        // For each possible stimulus level, update the probability 
+        // for that threshold level according to the user's response.
+        for (int j = 0; j < numLevels; ++j)
         {
-            int iterator = (int)(stimLevel * numLevels / stimRange);
+            iterator = (int)(stimLevel * numLevels / stimRange);
             if (response == 1)
             {
-                prob[j] = prob[j] + plgit[numLevels + iterator - j -1];
+                prob[j] += plgit[numLevels + iterator - j - 1];
             }
             else if (response == -1)
             {
-                prob[j] = prob[j] + mlgit[numLevels + iterator -j -1];
+                prob[j] += mlgit[numLevels + iterator - j - 1];
             }
 
+            //If the probability for this level of gain is greater
+            //than the previously recorded maximum, set new max.
             if (prob[j] > max)
             {
                 max = prob[j];
-                //p1 = j;
+                p2 = j;
             }
             else
             {
-                p1 = j; 
+                p1 = j;
             }
-            
-            if (prob[j] == max)
-            {
-                p2 = j;
-            }
-
         }
 
-        //Mathf.FloorToInt( )
         stimLevel = (p1 + p2) * (stimRange / numLevels) / 2;
-        Debug.Log("stim level = (" + p1 + " + " + p2 + ") * (" + stimRange + "/" + numLevels + ") /2");
-
+        //Debug.Log("gain = (" + p1 + " + " + p2 + ") * (" + stimRange + "/" + numLevels + ") /2");
     }
 
 
-    public override void ApplyRedirection()
-{
-    float    deltaDir = redirectionManager.deltaDir;
-        
-    InjectRotation((currentGain * deltaDir));
+    //This function updates the level of gain and records the user's response.
+    // it also checks the confidence level to end the test when ready.
+    public void PEST()
+    {
+        PESTSubroutine();
+        currentGain = stimLevel;
 
+        string lastLine = getLastLine("Assets/test.txt");
+        writeToFile("Assets/results.txt", lastLine + " " + Convert.ToString(currentGain));
+        response = (lastLine == yesButton.name) ? 1 : -1;
+
+
+        float fullSum = 0;
+        float sum = 0;
+
+        for (int i = 0; i < numLevels; ++i)
+        {
+            fullSum += prob[i];
+        }
+
+
+        int index;
+        for (int i = -2; i < 2; ++i)
+        {
+            index = (int)(currentGain * (numLevels / stimRange));
+            sum += prob[index + i];
+        }
+
+        if (fullSum * 0.95 <= sum)
+        {
+            //DONE
+        }
+
+    }
+
+    public void ApplyRotation()
+    {
+        Debug.Log("pos");
+        InjectRotation(currentGain * redirectionManager.deltaDir);
+    }
+
+    public override void ApplyRedirection()
+    {
     }
 }

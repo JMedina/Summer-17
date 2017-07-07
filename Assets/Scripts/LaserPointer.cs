@@ -12,7 +12,7 @@ public class LaserPointer : MonoBehaviour
     private GameObject reticule;
     private Transform reticuleTransform;
 
-
+    public ButtonManager buttonManager;
 
     private SteamVR_Controller.Device Controller
     {
@@ -27,18 +27,20 @@ public class LaserPointer : MonoBehaviour
 
     private void ShowReticule(RaycastHit hit)
     {
+
         reticule.SetActive(true);
         reticuleTransform.position = hitPoint;
         reticuleTransform.rotation = Quaternion.FromToRotation(Vector3.forward, hit.normal);
+
     }
-    
+
     void Start()
     {
         reticule = Instantiate(reticulePrefab);
         reticuleTransform = reticule.transform;
     }
 
-    
+
     void Update()
     {
         // If the touchpad is held down…
@@ -48,17 +50,24 @@ public class LaserPointer : MonoBehaviour
             reticule.SetActive(false);
             RaycastHit hit;
 
-            // Shoot a ray from the controller. If it hits something, make it store the point where it hit and show the laser.
+            // Shoot ray from controller. If it hits something, store point where it hit and show reticule.
             if (Physics.Raycast(trackedObj.transform.position, transform.forward, out hit, 100))
             {
                 hitPoint = hit.point;
-                //ShowLaser(hit);
                 ShowReticule(hit);
             }
         }
-        else 
+
+        // When the player releases touchpad initiate reset code
+        else if (Controller.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad))
         {
-            // Hide the laser when the player released the touchpad
+            buttonManager.resetRoom();
+            reticule.SetActive(false);
+        }
+
+        // Hide reticule when touchpad isn't being pressed
+        else
+        {
             reticule.SetActive(false);
         }
     }
