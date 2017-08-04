@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/Redirected walking scene.unity
+- path: Assets/Scenes/verification experience.unity
   isLoaded: 1
   isActive: 1

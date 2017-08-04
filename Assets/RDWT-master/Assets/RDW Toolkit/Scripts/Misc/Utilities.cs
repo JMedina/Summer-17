@@ -53,6 +53,16 @@ namespace Redirection
             return Quaternion.Inverse(origin.rotation) * dir;
         }
 
+        public static Vector3 GetCorrespondingCoordinates(Vector3 pos, Transform world)
+        {
+            return world.position + world.rotation * pos;
+        }
+
+        public static Vector3 GetCorrespondingDirection(Vector3 dir, Transform world)
+        {
+            return world.rotation * dir;
+        }
+
         // Based on: http://stackoverflow.com/questions/4780119/2d-euclidean-vector-rotations
         // FORCED LEFT HAND ROTATION AND DEGREES
         public static Vector2 RotateVector(Vector2 fromOrientation, float thetaInDegrees)

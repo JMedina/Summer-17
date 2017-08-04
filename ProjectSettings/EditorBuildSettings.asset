@@ -5,9 +5,15 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
+  - enabled: 0
+    path: 
+    guid: e409bc67642e91840b879e82861ed272
   - enabled: 1
-    path: Assets/Redirected walking scene.unity
+    path: Assets/Scenes/Training scene.unity
+    guid: 58f0bd760b2d670459d231d34002739e
+  - enabled: 1
+    path: Assets/Scenes/Redirected walking scene.unity
     guid: 5cb26906082fcce4e9edad3f2793daf6
   - enabled: 1
-    path: Assets/Question scene.unity
-    guid: e409bc67642e91840b879e82861ed272
+    path: Assets/Scenes/verification experience.unity
+    guid: c4eb843461859ce42b4bad73385ddf23

@@ -8,6 +8,8 @@ public class TrainingSequence : MonoBehaviour {
 
     public Transform player;
     public Transform painting;
+    public Transform feet;
+    public GameObject arrow;
     public GameObject room;
 
     public SteamVR_Controller.Device left;
@@ -16,52 +18,90 @@ public class TrainingSequence : MonoBehaviour {
     public AudioSource firstVoiceover;
     public AudioSource secondVoiceover;
     public AudioSource thirdVoiceover;
+    public AudioSource fourthVoiceover;
     public AudioSource selection;
-    
-    private static uint voiceoverSection = 1;
 
-    static bool thirdVoiceNeeded = false;
-    static bool selectionNeeded = false;
+    static uint voiceoverSection = 1;
+    static bool hasPressedReticule = false;
+    static bool needFourthVoiceover = false;
+    static bool needDing = false;
+
+    static string clicked;
 
 
-    void Awake()
+    private void Awake()
     {
-      
+        firstVoiceover.Play();
+        voiceoverSection = 2;
     }
-
 
     void Update()
     {
-        if (!firstVoiceover.isPlaying)
+        if (voiceoverSection == 2 && !firstVoiceover.isPlaying)
         {
-            part1();
-        }
-        
-        if (thirdVoiceNeeded)
-        {
-            PlayThird();
-            thirdVoiceNeeded = false;
+            playSecondVoiceover();
         }
 
-        if (selectionNeeded)
+        else if(voiceoverSection == 3 && !secondVoiceover.isPlaying)
         {
-            PlayDing();
-            selectionNeeded = false;
+            playThirdVoiceover();
+        }
+
+        else if(voiceoverSection == 4 && !thirdVoiceover.isPlaying)
+        {
+            playFourthVoiceover();
+        }
+
+        if (needDing)
+        {
+            selection.Play();
+            needDing = false;
+        }
+        Debug.Log(voiceoverSection);
+    }
+
+
+    public void playSecondVoiceover()
+    {
+        if (Vector3.Distance(player.position, feet.position) < 2)
+        {
+            secondVoiceover.Play();
+            print("trying to play 2");
+            voiceoverSection = 3;
+            hasPressedReticule = false;
         }
     }
 
 
-    public void part1()
+    public void playThirdVoiceover()
     {
-        //if looking in the direction of the painting, tell them to click the reticule
-        if (voiceoverSection == 1)
+        if(hasPressedReticule)
         {
-            float dot = Vector3.Dot(player.forward, (painting.position - player.position).normalized);
-            if (dot > 0.85f) {
-                voiceoverSection = 2;
-                //GetComponent<AudioSource>().PlayOneShot(secondVoiceover);
-                secondVoiceover.Play();
+            thirdVoiceover.Play();
+            print("trying to play 3");
+            voiceoverSection = 4;
+        }
+    }
 
+
+    public void playFourthVoiceover()
+    {
+        if (needFourthVoiceover)
+        {
+            fourthVoiceover.Play();
+            print("trying to play 4");
+            needFourthVoiceover = false;
+            voiceoverSection = 5;
+        }
+    }
+
+    public void goBack()
+    {
+        if (Input.GetKeyDown("b"))
+        {
+            if(voiceoverSection > 1)
+            {
+                --voiceoverSection;
             }
         }
     }
@@ -69,43 +109,29 @@ public class TrainingSequence : MonoBehaviour {
 
     void OnCollisionEnter(Collision col)
     {
-        //The first time, will tell user to keep playing until they are ready to start.
-        //Subsequent times will just rotate the room as usual.
-        if (col.gameObject.name == "Yes" || col.gameObject.name == "No")
+        hasPressedReticule = true; 
+        clicked = col.gameObject.name;  
+
+    }
+
+    public void rotateRoom()
+    {
+        if (clicked == "Same" || clicked == "Different")
         {
-            selectionNeeded = true;
+            needFourthVoiceover = true;
 
-            if (voiceoverSection == 2 )
+            if (voiceoverSection == 4 && !thirdVoiceover.isPlaying)
             {
-                //Debug.Log("selection : " + voiceoverSection);
-                thirdVoiceNeeded = true;
-                voiceoverSection = 3;
-                rotateRoom();
+                playFourthVoiceover();
             }
-            else if (voiceoverSection == 3)
-            {
-                //Debug.Log("selection : " + voiceoverSection);
-                rotateRoom();
-            } 
+
+            needDing = true;
+            SteamVR_Fade.Start(Color.black, 0.1f);
+            Vector3 axis = new Vector3(0, 1, 0);
+            room.transform.RotateAround(player.transform.position, axis, 180f);
+            arrow.transform.Rotate(new Vector3(0, 0, 1), 180f);
+            SteamVR_Fade.Start(Color.clear, 1.2f);
         }
-    }
-
-    void PlayThird()
-    {
-        thirdVoiceover.Play();
-    }
-
-    void PlayDing()
-    {
-        selection.Play();
-    }
-
-
-    void rotateRoom()
-    {
-		//GetComponent<AudioSource>().PlayOneShot(thirdVoiceover);
-        Vector3 axis = new Vector3(0, 1, 0);
-        room.transform.RotateAround(player.transform.position, axis, 90f);
     }
 
 }

@@ -11,6 +11,7 @@ public class LaserPointer : MonoBehaviour
     public GameObject reticulePrefab;
     private GameObject reticule;
     private Transform reticuleTransform;
+    public TrainingSequence trainingSequence;
 
     public ButtonManager buttonManager;
 
@@ -24,33 +25,30 @@ public class LaserPointer : MonoBehaviour
         trackedObj = GetComponent<SteamVR_TrackedObject>();
     }
 
-
-    private void ShowReticule(RaycastHit hit)
-    {
-
-        reticule.SetActive(true);
-        reticuleTransform.position = hitPoint;
-        reticuleTransform.rotation = Quaternion.FromToRotation(Vector3.forward, hit.normal);
-
-    }
-
     void Start()
     {
         reticule = Instantiate(reticulePrefab);
         reticuleTransform = reticule.transform;
     }
 
+    private void ShowReticule(RaycastHit hit)
+    {
+        reticule.SetActive(true);
+        reticuleTransform.position = hitPoint;
+        reticuleTransform.rotation = Quaternion.FromToRotation(Vector3.forward, hit.normal);
+    }
+
 
     void Update()
     {
-        // If the touchpad is held down…
+        // If the touchpad is held down
         if (Controller.GetPress(SteamVR_Controller.ButtonMask.Touchpad))
         {
 
             reticule.SetActive(false);
             RaycastHit hit;
 
-            // Shoot ray from controller. If it hits something, store point where it hit and show reticule.
+            // Shoot ray from controller. If it hits something, store point where it hit and show reticule
             if (Physics.Raycast(trackedObj.transform.position, transform.forward, out hit, 100))
             {
                 hitPoint = hit.point;
@@ -58,17 +56,24 @@ public class LaserPointer : MonoBehaviour
             }
         }
 
-        // When the player releases touchpad initiate reset code
+        //If you release the touchpad, check to see if you hit a button
         else if (Controller.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad))
         {
-            buttonManager.resetRoom();
-            reticule.SetActive(false);
+            if (buttonManager)
+            {
+                buttonManager.resetRoom();
+            }
+            else if (trainingSequence)
+            {
+                trainingSequence.rotateRoom();
+            }
         }
-
+        
         // Hide reticule when touchpad isn't being pressed
         else
         {
             reticule.SetActive(false);
+            
         }
     }
 }
