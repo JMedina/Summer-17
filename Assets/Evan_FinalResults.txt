@@ -1,0 +1,51 @@
+
+
+
+Positive threshold for Staircase is 0.6328571
+
+Negative threshold for Staircase is -0.2428572
+
+
+
+
+
+
+
+
+
+
+
+
+
+Positive threshold for Staircase is 0.89
+Negative threshold for Staircase is -0.4714286
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Positive threshold for Staircase is 0.59
+
+
+Positive threshold for Staircase is 0.5614286
+
+
+Positive threshold for Staircase is 0.5614286
+
+
+Positive threshold for Staircase is 0.5757142
+
+

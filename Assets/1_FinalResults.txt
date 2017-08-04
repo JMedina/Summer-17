@@ -1,0 +1,48 @@
+
+Positive threshold for Staircase is 0.4185714
+
+Positive threshold for Staircase is 0.03285714
+
+Positive threshold for PEST is 0.632
+
+
+Positive threshold for PEST is 0.395
+
+
+
+Positive threshold for PEST is 0.474
+
+
+Positive threshold for PEST is 0.553
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Positive threshold for PEST is 0.711
+Negative threshold for PEST is -0.36
+
+
+
+
+
+
+Positive threshold for PEST is 0.158
+
